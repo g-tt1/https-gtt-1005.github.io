@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>你拥有的艺术天分适合什么职业</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        art1: '#9C8B82',
+                        art2: '#B8A9A1',
+                        art3: '#E4DDD8',
+                        art4: '#6B5D57',
+                        art5: '#F7F4F1',
+                    },
+                    fontFamily: {
+                        serif: ['Noto Serif SC', 'serif'],
+                        sans: ['Noto Sans SC', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .bg-blur {
+                backdrop-filter: blur(8px);
+            }
+            .option-hover {
+                transition: all 0.35s ease;
+            }
+            .fade-in {
+                animation: fadeIn 0.6s ease forwards;
+            }
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap');
+        @keyframes fadeIn {
+            from {opacity:0; transform: translateY(12px);}
+            to {opacity:1; transform: translateY(0px);}
+        }
+        body {
+            background: linear-gradient(145deg, #F7F4F1, #E4DDD8);
+            min-height:100vh;
+        }
+    </style>
+</head>
+<body class="font-sans text-art4">
+    <div class="max-w-xl mx-auto px-5 py-10">
+        <!-- 首页封面 -->
+        <div id="page-home" class="fade-in">
+            <div class="bg-white/60 bg-blur rounded-2xl p-8 shadow-lg border border-art2/30">
+                <p class="text-art1 tracking-widest text-sm mb-3 text-center">艺术天分心理测试</p>
+                <h1 class="font-serif text-[clamp(1.6rem,5vw,2.4rem)] font-semibold text-center leading-relaxed mb-6">你拥有的艺术天分适合什么职业</h1>
+                <div class="w-16 h-[1px] bg-art2 mx-auto mb-6"></div>
+                <p class="text-sm leading-relaxed text-center mb-8">
+                    这是一份艺术天赋倾向心理测试，一共20道选择题，请凭第一直觉选择答案，没有对错之分。
+                    完成后，为你匹配适合你的艺术方向职业，并解析你的内在特质、审美模式与创作心理。
+                </p>
+                <button onclick="startTest()" class="w-full py-3.5 rounded-xl bg-art4 text-art5 hover:bg-art1 transition-all duration-300 font-medium">
+                    开始测试 <i class="fa fa-paint-brush ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 答题页面 -->
+        <div id="page-question" class="hidden fade-in">
+            <div class="bg-white/60 bg-blur rounded-2xl p-6 shadow-lg border border-art2/30">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-sm text-art1">题目 <span id="current-num">1</span>/20</span>
+                    <div class="h-1.5 w-36 bg-art3 rounded-full overflow-hidden">
+                        <div id="progress-bar" class="h-full bg-art2 transition-all duration-400" style="width:5%"></div>
+                    </div>
+                </div>
+                <h2 id="q-title" class="font-serif text-lg mb-6 leading-relaxed"></h2>
+                <div id="option-wrap" class="space-y-3"></div>
+                <div class="flex gap-3 mt-8">
+                    <button onclick="prevQuestion()" id="btn-prev" class="flex-1 py-2.5 rounded-xl border border-art2 text-art4 hover:bg-art3/40 transition-all">
+                        上一题
+                    </button>
+                    <button onclick="nextQuestion()" id="btn-next" class="flex-1 py-2.5 rounded-xl bg-art4 text-art5 hover:bg-art1 transition-all">
+                        下一题
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 结果页面 -->
+        <div id="page-result" class="hidden fade-in">
+            <div class="bg-white/60 bg-blur rounded-2xl p-8 shadow-lg border border-art2/30">
+                <p class="text-art1 tracking-widest text-sm mb-3 text-center">你的艺术天赋报告</p>
+                <h2 class="font-serif text-xl font-semibold text-center mb-4">【<span id="job-name"></span>】</h2>
+                <div class="w-16 h-[1px] bg-art2 mx-auto mb-6"></div>
+                <div id="result-content" class="text-sm leading-relaxed space-y-4"></div>
+                <button onclick="restartTest()" class="w-full py-3 mt-8 rounded-xl bg-art4 text-art5 hover:bg-art1 transition-all duration-300 font-medium">
+                    重新测试 <i class="fa fa-refresh ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 20道测试题目，A/B/C/D 四个选项，分别对应四类天赋倾向
+        // A=视觉造型型｜B=文字叙事型｜C=感官体验型｜D=创意概念型
+        const questionList = [
+            {
+                title: "空闲的时候，你更愿意做？",
+                opt:["画画、摄影、摆弄色彩和物件","写随笔、故事、诗歌","听歌、看话剧、去看展览感受氛围","头脑风暴，构思新奇点子、方案"]
+            },
+            {
+                title: "看到一处好看风景，你第一反应是？",
+                opt:["想把它画下来或者拍下来","想用文字描述它的感受","静静沉浸，感受当下的情绪氛围","思考怎么改造、设计成新场景"]
+            },
+            {
+                title: "你更喜欢哪一种作品？",
+                opt:["油画、插画、雕塑、平面设计","小说、剧本、歌词","舞台剧、音乐、舞蹈","装置艺术、先锋概念设计"]
+            },
+            {
+                title: "做创作时，你最在意？",
+                opt:["画面构图、色彩、形态美感","故事逻辑、情绪表达、台词","节奏、氛围感、感染力","想法是否足够独特、打破常规"]
+            },
+            {
+                title: "别人评价你的时候，经常说你？",
+                opt:["审美很好，很会搭配、有画面感","心思细腻，很会表达情绪","共情力强，容易被氛围带动","脑洞很大，想法与众不同"]
+            },
+            {
+                title: "如果要完成一个项目，你偏好？",
+                opt:["先敲定视觉风格、版式画面","先写大纲、梳理故事脉络","先定整体情绪基调与节奏","先构思核心创意概念"]
+            },
+            {
+                title: "面对空白画布/文档，你会？",
+                opt:["先铺颜色、勾勒轮廓","先写下一句触动自己的话","先放一段音乐进入状态","先反问自己：能不能换一种玩法"]
+            },
+            {
+                title: "对于规则和参考范本，你的态度？",
+                opt:["参考范本，在规范里做到好看","参考范本，但是想写出自己的故事","范本只是参考，感受优先","讨厌被范本束缚，想要颠覆"]
+            },
+            {
+                title: "哪种失败最让你难受？",
+                opt:["成品画面不好看、视觉不协调","文字平淡，打动不了别人","作品没有氛围感、无法感染人","想法太普通，没有新意"]
+            },
+            {
+                title: "学习新艺术技能，你优先关注？",
+                opt:["技法、造型、光影、配色技巧","表达技巧、叙事结构、修辞","情绪传递、表演、节奏把控","思维方式、跨界融合思路"]
+            },
+            {
+                title: "和别人合作创作，你适合做？",
+                opt:["视觉输出：绘图、排版、视觉呈现","文案脚本：写故事、台词、文案","氛围把控：配乐、情绪引导、表演","创意策划：定主题、出核心idea"]
+            },
+            {
+                title: "逛商店，你最先注意？",
+                opt:["包装、陈列、产品外观设计","商品上面的标语和文案","店内背景音乐、灯光氛围","新奇的商业模式、独特设计概念"]
+            },
+            {
+                title: "你更容易被什么打动？",
+                opt:["一张构图绝美的图片","一段戳心的文字","一场震撼的演出、一首歌","一个大胆先锋的创意想法"]
+            },
+            {
+                title: "做选择时，你常常依靠？",
+                opt:["直观视觉感受，好不好看","内心的感受，能不能说出来","直觉情绪，喜不喜欢这个氛围","理性思考，这个想法够不够新颖"]
+            },
+            {
+                title: "如果必须舍弃一项，你会舍弃？",
+                opt:["花哨的创意，优先保证画面美观","华丽的画面，优先保证故事动人","精致细节，优先保证整体氛围","成熟稳妥，优先保证创意大胆"]
+            },
+            {
+                title: "你觉得艺术的本质是？",
+                opt:["美的视觉呈现","情绪与故事的传递","感官的共鸣与体验","对固有认知的突破"]
+            },
+            {
+                title: "你更擅长记住？",
+                opt:["人脸、画面、颜色、场景样貌","别人说过的话、动人句子","一首歌的旋律、当时的心情","一个新奇有趣的想法"]
+            },
+            {
+                title: "遇到瓶颈，你会？",
+                opt:["多看优秀画册、摄影作品找视觉灵感","阅读文学作品，寻找故事灵感","出门看演出、听音乐滋养情绪","跨界学习，把别的领域思路引进来"]
+            },
+            {
+                title: "你更喜欢的评价是？",
+                opt:["你的作品太美了，看着很舒服","你的文字很有力量，让人共情","看完心里久久不能平静，很有感染力","你的想法太先锋了，完全想不到"]
+            },
+            {
+                title: "未来你希望你的工作？",
+                opt:["持续产出好看、有美感的视觉作品","持续讲述动人故事，传递心声","创造能打动人心的体验和氛围","不断提出颠覆常规的全新创意"]
+            }
+        ];
+
+        // 结果库：4大类，职业+详细心理分析
+        const resultList = [
+            {
+                type:"A",
+                job:"视觉造型艺术从业者｜插画师 / 平面设计师 / 摄影师 / 服装设计师",
+                content:`
+                <p><strong>天赋特质：视觉造型型</strong></p>
+                <p>你拥有极强的视觉感知天赋，对色彩、光影、构图、形态有着天生的敏感度。你的大脑习惯用图像的方式接收、储存信息，是典型“图像优先”的创作者。</p>
+                <p><strong>心理深层解析：</strong>你对“秩序美”和“形式美”有本能追求。内心偏爱和谐、舒适、有边界感的事物，你习惯通过视觉来整理纷乱的情绪，好看的画面会给你带来巨大的安定感。你不一定是外向活跃的人，但你善于把内心世界转化为看得见的画面。</p>
+                <p>你的优势：审美稳定、落地能力强，擅长把抽象想法转化成可视化成果；对细节、比例、质感很敏感。</p>
+                <p>你的局限：有时容易执着于外表好看，忽略内容内核；在创意需要打破形式的时候会感到不适。</p>
+                <p><strong>适合发展方向：</strong>插画师、平面设计师、UI视觉设计师、时尚服装设计师、静物/人像摄影师、陶艺师、珠宝设计师、美术教师。</p>
+                <p>心理小建议：试着不要只追求“好看”，尝试让画面承载更多故事，你的作品会更有生命力。</p>
+                `
+            },
+            {
+                type:"B",
+                job:"文字叙事艺术从业者｜作家 / 编剧 / 文案 / 内容创作者",
+                content:`
+                <p><strong>天赋特质：文字叙事型</strong></p>
+                <p>你是天生的叙事者，你擅长捕捉情绪、组织语言、编织故事。相比图像，文字是你最顺手的表达工具，你习惯把内心感受转化为语言、情节、对白。</p>
+                <p><strong>心理深层解析：</strong>你的内心世界层次丰富，内心有很多独白。你很擅长觉察自己与他人的情绪差别，你渴望被理解，也渴望通过故事理解别人。对你来说，表达不是炫耀，而是梳理自我、安放情绪的方式。你拥有很好的共情理解力，能读懂隐藏在表面之下的心事。</p>
+                <p>你的优势：情绪捕捉细腻、表达流畅，擅长搭建故事脉络，能用语言带领别人进入一个全新世界。</p>
+                <p>你的局限：容易过度内耗，反复斟酌字句，陷入自我怀疑；有时候想法很多，但落地执行速度偏慢。</p>
+                <p><strong>适合发展方向：</strong>小说作者、短视频编剧、影视编剧、品牌文案、专栏作者、播客撰稿、绘本脚本师、心理咨询文字记录创作者。</p>
+                <p>心理小建议：不用强迫每一段文字都完美，允许粗糙的初稿存在，你的价值在于故事本身。</p>
+                `
+            },
+            {
+                type:"C",
+                job:"感官体验艺术从业者｜音乐人 / 舞蹈编导 / 话剧演员 / 策展人",
+                content:`
+                <p><strong>天赋特质：感官体验型</strong></p>
+                <p>你的天赋在于氛围感与情绪感染力，你不靠画面、不靠文字，而是调动人的全部感官去传递感受。音乐、肢体、现场氛围、空间情绪是你最擅长的领域。</p>
+                <p><strong>心理深层解析：</strong>你是高共情感受型人格，你的情绪通道非常开放，很容易接收环境、他人、作品传递出来的情绪信号。你不喜欢冰冷、理性、割裂的创作，你追求“在场感”，你相信体验大于成品本身。你的内心柔软，情绪流动很快，感受力是你最大的宝藏。</p>
+                <p>你的优势：感染力强，擅长营造氛围，懂得节奏把控，很容易带动他人情绪，适合现场、沉浸式的艺术表达。</p>
+                <p>你的局限：情绪容易被外界牵动，状态不稳定；很难在枯燥、标准化流程中长期坚持。</p>
+                <p><strong>适合发展方向：</strong>独立音乐人、编曲、舞蹈编导、舞台剧演员、沉浸式展览策展人、配音演员、音乐疗愈辅助师、艺术活动策划。</p>
+                <p>心理小建议：学会区分“别人的情绪”和“自己的情绪”，建立情绪边界，才能长久保护你的感受天赋。</p>
+                `
+            },
+            {
+                type:"D",
+                job:"概念创意艺术从业者｜艺术策展人 / 创意总监 / 先锋艺术家 / 跨界设计师",
+                content:`
+                <p><strong>天赋特质：概念创意型</strong></p>
+                <p>你的核心天分是创造性思维，你擅长跳出固有框架，寻找新的关联，喜欢跨界、实验、先锋的表达。对你来说，艺术的核心是观念，而不是技法或者美感。</p>
+                <p><strong>心理深层解析：</strong>你天生拥有批判性思维，不轻易接受既定答案，喜欢质疑、解构、重组事物。你内心渴望独特，害怕重复与平庸，常规套路会让你觉得枯燥压抑。你更看重“思想的重量”，一件作品能不能引发思考，比好不好看、好不好听更加重要。</p>
+                <p>你的优势：脑洞开阔，跨界联想能力强，擅长挖掘主题、构建概念，适合策划、创意、研究类艺术工作。</p>
+                <p>你的局限：很多想法超前，不容易被大众理解；容易轻视基础技法，想法很多，落地比较困难。</p>
+                <p><strong>适合发展方向：</strong>当代先锋艺术家、艺术策展人、广告创意总监、跨界实验设计师、艺术评论人、新媒体交互艺术创作者。</p>
+                <p>心理小建议：伟大的创意需要落地载体，适当打磨基础能力，你的观念才能被更多人看见。</p>
+                `
+            }
+        ];
+
+        let current = 0;
+        let score = {A:0,B:0,C:0,D:0};
+        let userAnswer = [];
+
+        const homeDom = document.getElementById("page-home");
+        const qDom = document.getElementById("page-question");
+        const resDom = document.getElementById("page-result");
+        const qTitle = document.getElementById("q-title");
+        const optWrap = document.getElementById("option-wrap");
+        const currentNum = document.getElementById("current-num");
+        const progressBar = document.getElementById("progress-bar");
+        const jobName = document.getElementById("job-name");
+        const resultContent = document.getElementById("result-content");
+
+        function startTest(){
+            homeDom.classList.add("hidden");
+            qDom.classList.remove("hidden");
+            showQuestion();
+        }
+
+        function showQuestion(){
+            const q = questionList[current];
+            currentNum.innerText = current + 1;
+            progressBar.style.width = ((current+1)/20 *100)+"%";
+            qTitle.innerText = q.title;
+            optWrap.innerHTML = "";
+            const keys = ["A","B","C","D"];
+            q.opt.forEach((text,i)=>{
+                const div = document.createElement("div");
+                div.className = "option-hover py-3 px-4 rounded-xl border border-art2/50 cursor-pointer hover:bg-art3/40";
+                if(userAnswer[current] === keys[i]){
+                    div.classList.add("bg-art2/40");
+                }
+                div.innerText = text;
+                div.onclick = ()=>{
+                    userAnswer[current] = keys[i];
+                    showQuestion();
+                }
+                optWrap.appendChild(div);
+            })
+        }
+
+        function nextQuestion(){
+            if(!userAnswer[current]){
+                alert("请选择一个答案再继续");
+                return;
+            }
+            if(current < questionList.length -1){
+                current++;
+                showQuestion();
+            }else{
+                calcResult();
+            }
+        }
+
+        function prevQuestion(){
+            if(current > 0){
+                current--;
+                showQuestion();
+            }
+        }
+
+        function calcResult(){
+            score = {A:0,B:0,C:0,D:0};
+            userAnswer.forEach(k=>{
+                score[k]++;
+            })
+            // 取最高分类型
+            let maxType = "A";
+            let maxVal = 0;
+            for(let k in score){
+                if(score[k]>maxVal){
+                    maxVal = score[k];
+                    maxType = k;
+                }
+            }
+            const myRes = resultList.find(r=>r.type === maxType);
+            qDom.classList.add("hidden");
+            resDom.classList.remove("hidden");
+            jobName.innerText = myRes.job;
+            resultContent.innerHTML = myRes.content;
+        }
+
+        function restartTest(){
+            current = 0;
+            userAnswer = [];
+            score = {A:0,B:0,C:0,D:0};
+            resDom.classList.add("hidden");
+            homeDom.classList.remove("hidden");
+        }
+    </script>
+</body>
+</html>
